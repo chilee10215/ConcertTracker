@@ -1,0 +1,120 @@
+name: Code Review (Gemini Free Tier)
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - "backend/**"
+      - "frontend/**"
+      - "!**/*.md"
+
+permissions:
+  pull-requests: write
+  contents: read
+
+jobs:
+  gemini-review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get PR diff
+        id: diff
+        run: |
+          git fetch origin pull/${{ github.event.pull_request.number }}/head:pr-branch
+          git diff origin/main...pr-branch > /tmp/pr.diff
+          # Limit to first 15000 chars to avoid rate limits
+          head -c 15000 /tmp/pr.diff > /tmp/pr_limited.diff
+          echo "diff=$(cat /tmp/pr_limited.diff)" >> $GITHUB_OUTPUT
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - name: Gemini Code Review
+        id: review
+        env:
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+        run: |
+          pip install google-generativeai -q
+          python << 'EOF'
+          import os
+          import sys
+          import google.generativeai as genai
+          
+          api_key = os.environ.get("GOOGLE_API_KEY")
+          if not api_key:
+              print("ERROR: GOOGLE_API_KEY not set")
+              sys.exit(1)
+          
+          genai.configure(api_key=api_key)
+          model = genai.GenerativeModel("gemini-2.0-flash")
+          
+          diff = """${{ steps.diff.outputs.diff }}"""
+          
+          if not diff.strip():
+              print("No changes to review")
+              sys.exit(0)
+          
+          prompt = f"""Review this GitHub pull request code diff. Check for:
+          - Bugs and potential runtime errors
+          - Security vulnerabilities
+          - Performance issues
+          - Code style and maintainability
+          - Missing error handling
+          
+          Be concise but thorough. Format your response as:
+          
+          **Issues Found:** [list any critical issues]
+          **Suggestions:** [improvements to consider]
+          **Overall:** [brief assessment]
+          
+          DIFF:
+          {diff}"""
+          
+          try:
+              response = model.generate_content(prompt)
+              review_text = response.text
+              
+              # Write to file for GitHub Actions output
+              with open('/tmp/review_output.txt', 'w') as f:
+                  f.write(review_text)
+              
+              print(review_text)
+          except Exception as e:
+              print(f"Error calling Gemini API: {e}")
+              sys.exit(1)
+          EOF
+          
+          # Read review output
+          REVIEW=$(cat /tmp/review_output.txt)
+          # Escape for GitHub Actions
+          echo "review<<EOF" >> $GITHUB_OUTPUT
+          echo "$REVIEW" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Post Review Comment
+        if: steps.review.outputs.review
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const review = `${{ steps.review.outputs.review }}`;
+            
+            const comment = `## 🤖 Automated Code Review (Gemini)
+
+            ${review}
+            
+            ---
+            *Reviewed by Google Gemini (free tier) via GitHub Actions*
+            
+            **Tip:** For deeper architectural review, paste this diff in Claude Code Pro for detailed feedback.`;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
