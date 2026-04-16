@@ -27,7 +27,10 @@ jobs:
           git diff origin/main...pr-branch > /tmp/pr.diff
           # Limit to first 15000 chars to avoid rate limits
           head -c 15000 /tmp/pr.diff > /tmp/pr_limited.diff
-          echo "diff=$(cat /tmp/pr_limited.diff)" >> $GITHUB_OUTPUT
+          # Use EOF delimiter for multi-line diff
+          echo "diff<<EOF" >> $GITHUB_OUTPUT
+          cat /tmp/pr_limited.diff >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Set up Python
         uses: actions/setup-python@v4
