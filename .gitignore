@@ -1,0 +1,33 @@
+# Database
+*.db
+concert.db
+
+# Python
+__pycache__/
+*.py[cod]
+venv/
+.venv/
+*.egg-info/
+
+# Environment
+.env
+.env.local
+
+# Node
+node_modules/
+dist/
+.vite/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Skills
+.agents/
+
+# Docs
+CLAUDE_CODE_PROMPT_COMPLETE.txt
+skills-lock.json
