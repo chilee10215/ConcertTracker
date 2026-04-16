@@ -23,4 +23,20 @@ api.interceptors.response.use(
   }
 );
 
+// Helper to format error messages for user display
+export const formatApiError = (error: any): string => {
+  if (error.response?.data?.detail) {
+    return error.response.data.detail;
+  }
+  if (error.message) {
+    return error.message;
+  }
+  return "An unexpected error occurred";
+};
+
+// Helper to check if user is authenticated
+export const isAuthenticated = (): boolean => {
+  return !!localStorage.getItem("token");
+};
+
 export default api;
