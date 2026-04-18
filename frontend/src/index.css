@@ -35,25 +35,26 @@
   --radius-3xl: calc(var(--radius) * 2.2);
 }
 
-/* Force dark theme by default */
+/* Force dark theme by default — three-layer depth system:
+   background (darkest) → card (mid) → popover (brightest) */
 :root {
-  --background: oklch(0.08 0.01 280);
+  --background: oklch(0.08 0.01 280);     /* page bg — deepest */
   --foreground: oklch(0.93 0 0);
-  --card: oklch(0.12 0.01 280);
+  --card: oklch(0.14 0.015 280);          /* cards — clearly above bg */
   --card-foreground: oklch(0.93 0 0);
-  --popover: oklch(0.12 0.01 280);
+  --popover: oklch(0.22 0.02 280);        /* dialogs/menus — brightest layer */
   --popover-foreground: oklch(0.93 0 0);
   --primary: oklch(0.65 0.26 280);
   --primary-foreground: oklch(0.98 0 0);
-  --secondary: oklch(0.18 0.01 280);
+  --secondary: oklch(0.19 0.015 280);
   --secondary-foreground: oklch(0.93 0 0);
-  --muted: oklch(0.18 0.01 280);
+  --muted: oklch(0.19 0.015 280);
   --muted-foreground: oklch(0.5 0 0);
   --accent: oklch(0.65 0.26 280);
   --accent-foreground: oklch(0.98 0 0);
   --destructive: oklch(0.65 0.22 25);
   --destructive-foreground: oklch(0.98 0 0);
-  --border: oklch(1 0 0 / 8%);
+  --border: oklch(1 0 0 / 12%);           /* slightly more visible borders */
   --input: oklch(1 0 0 / 10%);
   --ring: oklch(0.65 0.26 280);
   --radius: 0.625rem;
