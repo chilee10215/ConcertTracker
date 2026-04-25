@@ -6,11 +6,21 @@ This document describes the required Git workflow and development practices for 
 
 ## Git Workflow
 
+### **Branching Strategy**
+
+We use a **Git Flow** branching model:
+
+- **`main`** — Production-ready code (stable, deployable)
+- **`develop`** — Integration branch for features (pre-release testing)
+- **Feature branches** — Individual feature work (branch from `develop`)
+
 ### **Branching Rules**
 
-- **Never commit directly to main** — all work must be in feature branches
+- **Never commit directly to main or develop** — all work must be in feature branches
+- Feature branches must merge to `develop` first via pull request
+- Once features are tested and validated on `develop`, merge to `main` via release PR
+- All branches require code review before merging
 - Main branch should always remain stable and deployable
-- All changes require a PR before merging
 
 ### **Feature Branch Naming**
 
@@ -58,9 +68,14 @@ Keep messages concise (~50 chars max) and descriptive.
 
 ### **Before Opening a PR**
 
-1. Create feature branch: `git checkout -b feat/your-feature`
+1. Create feature branch from `develop`: `git checkout -b feat/your-feature develop`
 2. Code and commit frequently with Conventional Commits
 3. Push to remote: `git push -u origin feat/your-feature`
+
+### **PR Target Branches**
+
+- **Feature PRs** → target `develop` (for feature integration and testing)
+- **Release PRs** → target `main` (from `develop` after validation)
 
 ### **PR Requirements**
 
@@ -77,7 +92,7 @@ Every PR must include:
 
 - Squash commits if appropriate (use GitHub's squash option)
 - Delete branch after merging
-- Verify main is still stable after merge
+- Verify target branch is still stable after merge
 
 ---
 
@@ -178,22 +193,35 @@ Use via `/shadcn`, `/vercel-react-best-practices`, etc. in prompts.
 
 ### **Add a New Concert Field**
 
-1. Create branch: `git checkout -b feat/concert-ticket-price-display`
+1. Create branch: `git checkout -b feat/concert-ticket-price-display develop`
 2. Update model: `backend/app/models/concert.py`
 3. Update schema: `backend/app/schemas/concert.py`
 4. Update router: `backend/app/routers/concerts.py`
 5. Update frontend type: `frontend/src/types/index.ts`
 6. Update component: `frontend/src/pages/ArtistConcertsPage.tsx`
 7. Commit: `feat: add ticket price display to concert details`
-8. PR with before/after screenshots
+8. PR to `develop` with before/after screenshots
 
 ### **Fix Auth Bug**
 
-1. Create branch: `git checkout -b fix/jwt-expiry-issue`
+1. Create branch: `git checkout -b fix/jwt-expiry-issue develop`
 2. Fix in `backend/app/services/auth_service.py` and `frontend/src/context/AuthContext.tsx`
 3. Test locally: Sign up, wait, verify redirect to login
 4. Commit: `fix: prevent expired JWT from hanging`
-5. PR with reproduction steps
+5. PR to `develop` with reproduction steps
+
+---
+
+## Release Process (Future)
+
+When ready to release to production:
+
+1. Create a release PR from `develop` → `main`
+2. Title: `release: v1.0.0` (or appropriate version)
+3. Include changelog of features/fixes since last release
+4. Merge after approval
+5. Tag the commit: `git tag -a v1.0.0 -m "Release v1.0.0"`
+6. Push tags: `git push origin v1.0.0`
 
 ---
 
