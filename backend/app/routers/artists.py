@@ -1,4 +1,7 @@
+from typing import List
+
 from fastapi import APIRouter, Depends, HTTPException, status, Query
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 
@@ -8,6 +11,10 @@ from app.models.artist import Artist
 from app.models.concert import Concert
 from app.schemas.artist import ArtistResponse, ArtistSearchResult, FollowRequest
 from app.services.ticketmaster import search_artists
+
+
+class ReorderRequest(BaseModel):
+    artist_ids: List[int]
 
 router = APIRouter()
 
@@ -26,6 +33,10 @@ def get_followed_artists(
     user_artists = (
         db.query(UserArtist)
         .filter(UserArtist.user_id == current_user.id)
+        .order_by(
+            UserArtist.position.asc().nulls_last(),
+            UserArtist.id.asc(),
+        )
         .all()
     )
     results = []
@@ -103,3 +114,20 @@ def unfollow_artist(
     db.delete(ua)
     db.commit()
     return {"detail": "Unfollowed"}
+
+
+@router.put("/reorder")
+def reorder_artists(
+    data: ReorderRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    user_artist_map = {
+        ua.artist_id: ua
+        for ua in db.query(UserArtist).filter(UserArtist.user_id == current_user.id).all()
+    }
+    for position, artist_id in enumerate(data.artist_ids):
+        if artist_id in user_artist_map:
+            user_artist_map[artist_id].position = position
+    db.commit()
+    return {"success": True}
