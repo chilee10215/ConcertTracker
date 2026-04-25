@@ -3,7 +3,6 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/context/AuthContext";
 import { Music } from "lucide-react";
 
@@ -30,55 +29,75 @@ export function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-[80vh] items-center justify-center">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-            <Music className="h-6 w-6 text-primary" />
+    <div className="flex min-h-[85vh] items-center justify-center px-4">
+      <div className="w-full max-w-sm">
+        {/* Logo */}
+        <div className="mb-8 flex flex-col items-center gap-3">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary shadow-[0_0_24px_oklch(0.65_0.26_280/0.5)]">
+            <Music className="h-6 w-6 text-white" />
           </div>
-          <CardTitle className="text-2xl">Welcome back</CardTitle>
-          <CardDescription>Sign in to your ConcertTracker account</CardDescription>
-        </CardHeader>
-        <CardContent>
+          <div className="text-center">
+            <h1 className="text-xl font-bold">
+              Concert<span className="text-primary">Tracker</span>
+            </h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Sign in to track your concerts
+            </p>
+          </div>
+        </div>
+
+        {/* Form card */}
+        <div className="rounded-2xl border border-white/8 bg-card p-6 shadow-xl">
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
-              <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+              <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2.5 text-sm text-destructive">
                 {error}
               </div>
             )}
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+            <div className="space-y-1.5">
+              <Label htmlFor="email" className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                Email
+              </Label>
               <Input
                 id="email"
                 type="email"
                 placeholder="you@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                className="border-white/10 bg-white/5 focus-visible:border-primary/50 focus-visible:ring-primary/20"
                 required
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+            <div className="space-y-1.5">
+              <Label htmlFor="password" className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                Password
+              </Label>
               <Input
                 id="password"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                className="border-white/10 bg-white/5 focus-visible:border-primary/50 focus-visible:ring-primary/20"
                 required
               />
             </div>
-            <Button type="submit" className="w-full" disabled={loading}>
+            <Button
+              type="submit"
+              className="w-full bg-primary hover:bg-primary/90 shadow-[0_0_16px_oklch(0.65_0.26_280/0.35)]"
+              disabled={loading}
+            >
               {loading ? "Signing in..." : "Sign In"}
             </Button>
           </form>
-          <p className="mt-4 text-center text-sm text-muted-foreground">
-            Don't have an account?{" "}
-            <Link to="/signup" className="text-primary underline">
-              Sign up
-            </Link>
-          </p>
-        </CardContent>
-      </Card>
+        </div>
+
+        <p className="mt-4 text-center text-sm text-muted-foreground">
+          Don't have an account?{" "}
+          <Link to="/signup" className="font-medium text-primary hover:text-primary/80">
+            Sign up
+          </Link>
+        </p>
+      </div>
     </div>
   );
 }
