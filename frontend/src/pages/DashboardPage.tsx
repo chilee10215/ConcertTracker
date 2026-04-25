@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
+import { Link } from "react-router-dom";
 import { ArtistCard } from "@/components/dashboard/ArtistCard";
-import { AddArtistDialog } from "@/components/dashboard/AddArtistDialog";
-import { Loader2, Users } from "lucide-react";
+import { buttonVariants } from "@/components/ui/button";
+import { Loader2, Users, UserPlus } from "lucide-react";
 import api from "@/lib/api";
 import type { Artist } from "@/types";
 
@@ -76,7 +77,10 @@ export function DashboardPage() {
             Track concerts from your followed artists
           </p>
         </div>
-        <AddArtistDialog onArtistFollowed={fetchArtists} />
+        <Link to="/follow" className={buttonVariants({ size: "sm" })}>
+          <UserPlus className="mr-1.5 h-4 w-4" />
+          Follow Artist
+        </Link>
       </div>
 
       {/* Genre filter pills */}
