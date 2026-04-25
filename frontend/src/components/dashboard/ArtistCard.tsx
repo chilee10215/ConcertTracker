@@ -11,7 +11,9 @@ interface ArtistCardProps {
 
 export function ArtistCard({ artist, onUnfollow }: ArtistCardProps) {
   const initials = artist.name
+    .trim()
     .split(" ")
+    .filter(Boolean)
     .map((w) => w[0])
     .join("")
     .slice(0, 2)
@@ -23,11 +25,12 @@ export function ArtistCard({ artist, onUnfollow }: ArtistCardProps) {
       <Button
         variant="ghost"
         size="icon"
-        className="absolute right-2 top-2 z-10 h-7 w-7 rounded-full bg-black/60 opacity-0 backdrop-blur-sm transition-opacity group-hover:opacity-100 hover:bg-black/80"
+        className="absolute right-2 top-2 z-10 h-7 w-7 rounded-full bg-black/60 opacity-0 backdrop-blur-sm transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 hover:bg-black/80 focus-visible:opacity-100"
         onClick={(e) => {
           e.preventDefault();
           onUnfollow(artist.id);
         }}
+        aria-label={`Unfollow ${artist.name}`}
       >
         <X className="h-3.5 w-3.5 text-white" />
       </Button>

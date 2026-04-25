@@ -35,8 +35,11 @@
   --radius-3xl: calc(var(--radius) * 2.2);
 }
 
-/* Force dark theme by default — three-layer depth system:
-   background (darkest) → card (mid) → popover (brightest) */
+/* Dark theme variables (dark-only design for v1).
+   To support light mode in future: wrap these in @media (prefers-color-scheme: dark)
+   and add light theme variables in a separate :root or @light rule.
+
+   Three-layer depth system: background (darkest) → card (mid) → popover (brightest) */
 :root {
   --background: oklch(0.08 0.01 280);     /* page bg — deepest */
   --foreground: oklch(0.93 0 0);
@@ -73,10 +76,3 @@
   }
 }
 
-/* Artist card image hover effect */
-.artist-card-img {
-  transition: transform 0.3s ease;
-}
-.artist-card-img:hover {
-  transform: scale(1.04);
-}

@@ -1,11 +1,9 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { ArtistCard } from "@/components/dashboard/ArtistCard";
 import { AddArtistDialog } from "@/components/dashboard/AddArtistDialog";
 import { Loader2, Users } from "lucide-react";
 import api from "@/lib/api";
 import type { Artist } from "@/types";
-
-const GENRE_FILTERS = ["All", "Pop", "K-Pop", "Rock", "J-Pop", "J-Rock", "R&B", "Hip-Hop"];
 
 export function DashboardPage() {
   const [artists, setArtists] = useState<Artist[]>([]);
@@ -36,10 +34,22 @@ export function DashboardPage() {
     }
   };
 
-  const filteredArtists =
-    activeGenre === "All"
-      ? artists
-      : artists.filter((a) => a.genres.some((g) => g === activeGenre));
+  // Derive available genres dynamically from artists
+  const genreFilters = useMemo(() => {
+    const uniqueGenres = Array.from(
+      new Set(artists.flatMap((a) => a.genres))
+    ).sort();
+    return ["All", ...uniqueGenres];
+  }, [artists]);
+
+  // Memoize filtered artists to prevent unnecessary recalculations
+  const filteredArtists = useMemo(
+    () =>
+      activeGenre === "All"
+        ? artists
+        : artists.filter((a) => a.genres.some((g) => g === activeGenre)),
+    [artists, activeGenre]
+  );
 
   if (loading) {
     return (
@@ -72,7 +82,7 @@ export function DashboardPage() {
       {/* Genre filter pills */}
       {artists.length > 0 && (
         <div className="mb-6 flex flex-wrap gap-2">
-          {GENRE_FILTERS.map((genre) => (
+          {genreFilters.map((genre) => (
             <button
               key={genre}
               onClick={() => setActiveGenre(genre)}
