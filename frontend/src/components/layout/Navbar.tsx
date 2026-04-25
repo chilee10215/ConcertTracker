@@ -1,10 +1,10 @@
 import { Link, useLocation } from "react-router-dom";
-import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
-import { Music, Heart, LayoutDashboard, LogOut } from "lucide-react";
+import { Music, Heart, LayoutDashboard } from "lucide-react";
+import { UserProfileDropdown } from "./UserProfileDropdown";
 
 export function Navbar() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const location = useLocation();
 
   const isActive = (path: string) => location.pathname === path;
@@ -48,20 +48,7 @@ export function Navbar() {
           )}
         </div>
 
-        {user && (
-          <div className="flex items-center gap-3">
-            <span className="text-xs text-muted-foreground">{user.email}</span>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={logout}
-              className="h-8 text-muted-foreground hover:text-foreground"
-            >
-              <LogOut className="mr-1.5 h-3.5 w-3.5" />
-              Logout
-            </Button>
-          </div>
-        )}
+        {user && <UserProfileDropdown />}
       </div>
     </nav>
   );
