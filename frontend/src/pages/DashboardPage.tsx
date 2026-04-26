@@ -1,18 +1,101 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  KeyboardSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  rectSortingStrategy,
+  useSortable,
+  arrayMove,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { ArtistCard } from "@/components/dashboard/ArtistCard";
 import { AddArtistDialog } from "@/components/dashboard/AddArtistDialog";
 import { Loader2, Users } from "lucide-react";
 import api from "@/lib/api";
 import type { Artist } from "@/types";
 
+const STORAGE_KEY = "artist-card-order";
+
+function loadSavedOrder(): number[] | null {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? (JSON.parse(raw) as number[]) : null;
+  } catch {
+    return null;
+  }
+}
+
+function saveOrderToStorage(ids: number[]) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(ids));
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// Sortable card wrapper
+// ────────────────────────────────────────────────────────────────────────────
+interface SortableArtistCardProps {
+  artist: Artist;
+  onUnfollow: (id: number) => void;
+}
+
+function SortableArtistCard({ artist, onUnfollow }: SortableArtistCardProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: artist.id });
+
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    zIndex: isDragging ? 10 : undefined,
+    cursor: isDragging ? "grabbing" : "grab",
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+      aria-label={`Drag to reorder ${artist.name}`}
+    >
+      <ArtistCard artist={artist} onUnfollow={onUnfollow} />
+    </div>
+  );
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// Dashboard page
+// ────────────────────────────────────────────────────────────────────────────
 export function DashboardPage() {
   const [artists, setArtists] = useState<Artist[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeGenre, setActiveGenre] = useState("All");
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   const fetchArtists = useCallback(async () => {
     try {
       const res = await api.get("/artists/followed");
+      // Backend returns artists ordered by position, so use that as source of truth
       setArtists(res.data);
     } catch {
       // handle error
@@ -25,16 +108,54 @@ export function DashboardPage() {
     fetchArtists();
   }, [fetchArtists]);
 
+  // Flush pending save when component unmounts
+  useEffect(() => {
+    return () => {
+      if (saveTimerRef.current) {
+        clearTimeout(saveTimerRef.current);
+        // Trigger save immediately on unmount
+        const saved = loadSavedOrder();
+        if (saved) {
+          api.put("/artists/reorder", { artist_ids: saved }).catch(() => {});
+        }
+      }
+    };
+  }, []);
+
   const handleUnfollow = async (artistId: number) => {
     try {
       await api.delete(`/artists/follow/${artistId}`);
-      setArtists((prev) => prev.filter((a) => a.id !== artistId));
+      setArtists((prev) => {
+        const next = prev.filter((a) => a.id !== artistId);
+        saveOrderToStorage(next.map((a) => a.id));
+        return next;
+      });
     } catch {
       // handle error
     }
   };
 
-  // Derive available genres dynamically from artists
+  const persistOrder = useCallback((ids: number[]) => {
+    saveOrderToStorage(ids);
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = setTimeout(() => {
+      api.put("/artists/reorder", { artist_ids: ids }).catch(() => {});
+    }, 800);
+  }, []);
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    setArtists((prev) => {
+      const oldIndex = prev.findIndex((a) => a.id === active.id);
+      const newIndex = prev.findIndex((a) => a.id === over.id);
+      const reordered = arrayMove(prev, oldIndex, newIndex);
+      persistOrder(reordered.map((a) => a.id));
+      return reordered;
+    });
+  };
+
   const genreFilters = useMemo(() => {
     const uniqueGenres = Array.from(
       new Set(artists.flatMap((a) => a.genres))
@@ -42,7 +163,6 @@ export function DashboardPage() {
     return ["All", ...uniqueGenres];
   }, [artists]);
 
-  // Memoize filtered artists to prevent unnecessary recalculations
   const filteredArtists = useMemo(
     () =>
       activeGenre === "All"
@@ -98,7 +218,7 @@ export function DashboardPage() {
         </div>
       )}
 
-      {/* Empty state */}
+      {/* Card grid with drag-and-drop */}
       {artists.length === 0 ? (
         <div className="flex h-[40vh] flex-col items-center justify-center gap-4">
           <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
@@ -118,15 +238,27 @@ export function DashboardPage() {
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
-          {filteredArtists.map((artist) => (
-            <ArtistCard
-              key={artist.id}
-              artist={artist}
-              onUnfollow={handleUnfollow}
-            />
-          ))}
-        </div>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext
+            items={filteredArtists.map((a) => a.id)}
+            strategy={rectSortingStrategy}
+          >
+            {/* Larger cards: max 4 per row on desktop (up from 6) */}
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+              {filteredArtists.map((artist) => (
+                <SortableArtistCard
+                  key={artist.id}
+                  artist={artist}
+                  onUnfollow={handleUnfollow}
+                />
+              ))}
+            </div>
+          </SortableContext>
+        </DndContext>
       )}
     </div>
   );
