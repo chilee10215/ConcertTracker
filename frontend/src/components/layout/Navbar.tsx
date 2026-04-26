@@ -1,7 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
-import { Music, Heart, LayoutDashboard, LogOut, UserPlus } from "lucide-react";
+import { Music, Heart, LayoutDashboard, LogOut } from "lucide-react";
 
 export function Navbar() {
   const { user, logout } = useAuth();
@@ -43,17 +43,6 @@ export function Navbar() {
               >
                 <Heart className="h-4 w-4" />
                 Wishlist
-              </Link>
-              <Link
-                to="/follow"
-                className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-colors ${
-                  isActive("/follow")
-                    ? "text-primary"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                <UserPlus className="h-4 w-4" />
-                Follow
               </Link>
             </div>
           )}
