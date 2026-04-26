@@ -99,7 +99,6 @@ export function DashboardPage() {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<ArtistSearchResult[]>([]);
   const [searching, setSearching] = useState(false);
-  const [followedNames, setFollowedNames] = useState<Set<string>>(new Set());
   const [followingName, setFollowingName] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const searchContainerRef = useRef<HTMLDivElement>(null);
@@ -152,9 +151,6 @@ export function DashboardPage() {
       const res = await api.get("/artists/followed");
       // Backend returns artists ordered by position, so use that as source of truth
       setArtists(res.data);
-      // Update followed names for search feature
-      const names: string[] = res.data.map((a: { name: string }) => a.name);
-      setFollowedNames(new Set(names));
     } catch {
       // handle error
     } finally {
@@ -186,15 +182,6 @@ export function DashboardPage() {
       setArtists((prev) => {
         const next = prev.filter((a) => a.id !== artistId);
         saveOrderToStorage(next.map((a) => a.id));
-        // Update followed names in search
-        const unfollowedName = prev.find((a) => a.id === artistId)?.name;
-        if (unfollowedName) {
-          setFollowedNames((prevNames) => {
-            const newNames = new Set(prevNames);
-            newNames.delete(unfollowedName);
-            return newNames;
-          });
-        }
         return next;
       });
     } catch {
@@ -205,17 +192,22 @@ export function DashboardPage() {
   const handleFollow = async (artist: ArtistSearchResult) => {
     setFollowingName(artist.name);
     try {
-      await api.post("/artists/follow", {
+      const res = await api.post("/artists/follow", {
         name: artist.name,
         image_url: artist.image_url,
         genres: artist.genres,
       });
-      setFollowedNames((prev) => new Set([...prev, artist.name]));
-      // Refresh artists list to show new followed artist
-      fetchArtists();
-    } catch {
-      // already following or error — still mark as followed if 400
-      setFollowedNames((prev) => new Set([...prev, artist.name]));
+      // Optimistically add the followed artist to the list
+      setArtists((prev) => [...prev, res.data]);
+    } catch (error: unknown) {
+      // Only mark as already following if it's a 400 (conflict)
+      // Other errors (network, 500, etc.) should not update UI
+      const axiosError = error as { response?: { status: number } };
+      if (axiosError.response?.status === 400) {
+        // Already following — update search results but don't add to artists list
+        // The UI will show "Following" button which is correct
+      }
+      // For other errors, silently fail (no toast needed for search UI)
     } finally {
       setFollowingName(null);
     }
@@ -261,6 +253,11 @@ export function DashboardPage() {
         ? artists
         : artists.filter((a) => a.genres.some((g) => g === activeGenre)),
     [artists, activeGenre]
+  );
+
+  const followedNames = useMemo(
+    () => new Set(artists.map((a) => a.name)),
+    [artists]
   );
 
   if (loading) {
@@ -327,7 +324,7 @@ export function DashboardPage() {
 
             {/* Artist results */}
             {!searching && results.length > 0 && (
-              <div className="max-h-[60vh] space-y-2 overflow-y-auto rounded-lg border border-white/10 bg-[oklch(0.08_0.01_280)] p-2 pr-1 shadow-xl scrollbar-thin">
+              <div className="max-h-[60vh] space-y-2 overflow-y-auto rounded-lg border border-white/10 bg-popover p-2 pr-1 shadow-xl scrollbar-thin">
                 {results.map((artist) => {
                   const isFollowing = followedNames.has(artist.name);
                   const isPending = followingName === artist.name;
