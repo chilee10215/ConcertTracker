@@ -24,6 +24,7 @@ class UserArtist(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     artist_id = Column(Integer, ForeignKey("artists.id"), nullable=False)
+    position = Column(Integer, nullable=True)
     added_at = Column(DateTime, default=datetime.utcnow)
 
     user = relationship("User", back_populates="followed_artists")

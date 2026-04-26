@@ -17,9 +17,9 @@ import api from "@/lib/api";
 import type { WishlistItem } from "@/types";
 
 const STATUS_COLORS: Record<string, string> = {
-  upcoming: "bg-blue-100 text-blue-800",
-  on_sale: "bg-green-100 text-green-800",
-  lottery_open: "bg-orange-100 text-orange-800",
+  upcoming: "bg-blue-500/15 text-blue-400 border border-blue-500/20",
+  on_sale: "bg-green-500/15 text-green-400 border border-green-500/20",
+  lottery_open: "bg-orange-500/15 text-orange-400 border border-orange-500/20",
 };
 
 const STATUS_DOT_COLORS: Record<string, string> = {
