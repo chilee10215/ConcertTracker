@@ -122,12 +122,27 @@ def reorder_artists(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    user_artist_map = {
-        ua.artist_id: ua
-        for ua in db.query(UserArtist).filter(UserArtist.user_id == current_user.id).all()
-    }
+    # Get all followed artists for the current user
+    all_user_artists = db.query(UserArtist).filter(
+        UserArtist.user_id == current_user.id
+    ).all()
+
+    # Validate that the request includes all followed artists
+    provided_ids = set(data.artist_ids)
+    existing_ids = {ua.artist_id for ua in all_user_artists}
+
+    if provided_ids != existing_ids:
+        raise HTTPException(
+            status_code=400,
+            detail="Reorder request must include all followed artists"
+        )
+
+    # Create map for efficient updates
+    user_artist_map = {ua.artist_id: ua for ua in all_user_artists}
+
+    # Update positions
     for position, artist_id in enumerate(data.artist_ids):
-        if artist_id in user_artist_map:
-            user_artist_map[artist_id].position = position
+        user_artist_map[artist_id].position = position
+
     db.commit()
     return {"success": True}

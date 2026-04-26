@@ -95,20 +95,8 @@ export function DashboardPage() {
   const fetchArtists = useCallback(async () => {
     try {
       const res = await api.get("/artists/followed");
-      const fetched: Artist[] = res.data;
-
-      // Apply saved local order if it matches the current artist set
-      const savedOrder = loadSavedOrder();
-      if (savedOrder && savedOrder.length > 0) {
-        const idSet = new Set(fetched.map((a) => a.id));
-        const validSaved = savedOrder.filter((id) => idSet.has(id));
-        if (validSaved.length === fetched.length) {
-          const map = new Map(fetched.map((a) => [a.id, a]));
-          setArtists(validSaved.map((id) => map.get(id)!));
-          return;
-        }
-      }
-      setArtists(fetched);
+      // Backend returns artists ordered by position, so use that as source of truth
+      setArtists(res.data);
     } catch {
       // handle error
     } finally {
@@ -119,6 +107,20 @@ export function DashboardPage() {
   useEffect(() => {
     fetchArtists();
   }, [fetchArtists]);
+
+  // Flush pending save when component unmounts
+  useEffect(() => {
+    return () => {
+      if (saveTimerRef.current) {
+        clearTimeout(saveTimerRef.current);
+        // Trigger save immediately on unmount
+        const saved = loadSavedOrder();
+        if (saved) {
+          api.put("/artists/reorder", { artist_ids: saved }).catch(() => {});
+        }
+      }
+    };
+  }, []);
 
   const handleUnfollow = async (artistId: number) => {
     try {
