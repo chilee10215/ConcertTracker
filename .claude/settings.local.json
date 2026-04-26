@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(npm --version)",
-      "Bash(pip3 --version)"
+      "Bash(pip3 --version)",
+      "Bash(git checkout *)",
+      "Bash(npm run *)"
     ]
   }
 }
