@@ -1,4 +1,5 @@
 import pytest
+import os
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -12,7 +13,8 @@ from app.models.artist import Artist
 from app.models.concert import Concert
 from app.services.auth_service import hash_password, create_access_token
 
-SQLALCHEMY_TEST_URL = "sqlite:///./test_concert_tracker.db"
+TEST_DB_PATH = "./test_concert_tracker.db"
+SQLALCHEMY_TEST_URL = f"sqlite:///{TEST_DB_PATH}"
 
 test_engine = create_engine(
     SQLALCHEMY_TEST_URL,
@@ -32,11 +34,20 @@ def override_get_db():
 app.dependency_overrides[get_db] = override_get_db
 
 
-@pytest.fixture(autouse=True)
-def setup_and_teardown_db():
+@pytest.fixture(scope="session", autouse=True)
+def setup_and_teardown_db_session():
     Base.metadata.create_all(bind=test_engine)
     yield
     Base.metadata.drop_all(bind=test_engine)
+    if os.path.exists(TEST_DB_PATH):
+        os.remove(TEST_DB_PATH)
+
+
+@pytest.fixture(autouse=True)
+def setup_and_teardown_db():
+    Base.metadata.drop_all(bind=test_engine)
+    Base.metadata.create_all(bind=test_engine)
+    yield
 
 
 @pytest.fixture

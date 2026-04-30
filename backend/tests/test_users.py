@@ -43,15 +43,13 @@ def test_update_profile_avatar_invalid_mime_type_returns_400(client, test_user, 
 
 
 def test_update_profile_avatar_no_filename_returns_error(client, test_user, auth_headers):
-    # An empty filename is rejected by FastAPI's multipart parser (422) before
-    # reaching our custom validation — both 400 and 422 are correct error responses.
     jpeg_bytes = b"\xff\xd8\xff\xe0" + b"\x00" * 100
     response = client.put(
         "/api/users/profile",
         files={"avatar": ("", io.BytesIO(jpeg_bytes), "image/jpeg")},
         headers=auth_headers,
     )
-    assert response.status_code in (400, 422)
+    assert response.status_code == 422
 
 
 def test_update_profile_avatar_too_large_returns_400(client, test_user, auth_headers):
