@@ -70,6 +70,7 @@ describe("AuthContext", () => {
 
   it("stores token in localStorage after signup", async () => {
     mockApi.post.mockResolvedValueOnce({ data: { access_token: "signup-token" } });
+    mockApi.get.mockResolvedValueOnce({ data: { id: 1, email: "new@example.com" } });
 
     const { result } = renderHook(() => useAuth(), { wrapper });
 
