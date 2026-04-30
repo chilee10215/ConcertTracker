@@ -14,6 +14,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   signup: (email: string, password: string) => Promise<void>;
   logout: () => void;
+  updateProfile: (username: string, avatar?: File | null) => Promise<void>;
   loading: boolean;
 }
 
@@ -61,8 +62,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
   };
 
+  const updateProfile = async (username: string, avatar?: File | null) => {
+    const formData = new FormData();
+    formData.append("username", username);
+    if (avatar) {
+      formData.append("avatar", avatar);
+    }
+    const res = await api.put("/users/profile", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    setUser(res.data);
+  };
+
   return (
-    <AuthContext.Provider value={{ user, token, login, signup, logout, loading }}>
+    <AuthContext.Provider value={{ user, token, login, signup, logout, updateProfile, loading }}>
       {children}
     </AuthContext.Provider>
   );

@@ -1,15 +1,19 @@
+import os
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from app.database import engine, Base
-from app.routers import auth, artists, concerts, wishlist
+from app.routers import auth, artists, concerts, wishlist, users
+from app.config import UPLOAD_BASE_DIR, UPLOAD_AVATARS_DIR
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     Base.metadata.create_all(bind=engine)
+    os.makedirs(UPLOAD_AVATARS_DIR, exist_ok=True)
     yield
 
 
@@ -23,10 +27,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Serve uploaded files (avatars, etc.)
+os.makedirs(UPLOAD_BASE_DIR, exist_ok=True)
+app.mount("/uploads", StaticFiles(directory=UPLOAD_BASE_DIR), name="uploads")
+
 app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
 app.include_router(artists.router, prefix="/api/artists", tags=["artists"])
 app.include_router(concerts.router, prefix="/api/concerts", tags=["concerts"])
 app.include_router(wishlist.router, prefix="/api/wishlist", tags=["wishlist"])
+app.include_router(users.router, prefix="/api/users", tags=["users"])
 
 
 @app.get("/api/health")
