@@ -7,14 +7,13 @@ from fastapi.staticfiles import StaticFiles
 
 from app.database import engine, Base
 from app.routers import auth, artists, concerts, wishlist, users
-
-UPLOAD_DIR = os.path.join(os.path.dirname(__file__), "..", "uploads")
+from app.config import UPLOAD_BASE_DIR, UPLOAD_AVATARS_DIR
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     Base.metadata.create_all(bind=engine)
-    os.makedirs(os.path.join(UPLOAD_DIR, "avatars"), exist_ok=True)
+    os.makedirs(UPLOAD_AVATARS_DIR, exist_ok=True)
     yield
 
 
@@ -29,8 +28,8 @@ app.add_middleware(
 )
 
 # Serve uploaded files (avatars, etc.)
-os.makedirs(UPLOAD_DIR, exist_ok=True)
-app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
+os.makedirs(UPLOAD_BASE_DIR, exist_ok=True)
+app.mount("/uploads", StaticFiles(directory=UPLOAD_BASE_DIR), name="uploads")
 
 app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
 app.include_router(artists.router, prefix="/api/artists", tags=["artists"])

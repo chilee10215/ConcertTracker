@@ -1,14 +1,17 @@
-from pydantic_settings import BaseSettings
+import os
 
+# Upload configuration
+UPLOAD_BASE_DIR = os.path.join(os.path.dirname(__file__), "..", "uploads")
+UPLOAD_AVATARS_DIR = os.path.join(UPLOAD_BASE_DIR, "avatars")
 
-class Settings(BaseSettings):
-    SECRET_KEY: str = "dev-secret-key-change-in-production"
-    DATABASE_URL: str = "sqlite:///./concert.db"
-    TICKETMASTER_API_KEY: str = ""
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440  # 24 hours
+# File validation
+ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/gif", "image/webp"}
+MAX_AVATAR_SIZE_BYTES = 5 * 1024 * 1024  # 5 MB
 
-    class Config:
-        env_file = ".env"
-
-
-settings = Settings()
+# Magic bytes for image validation (simple check)
+IMAGE_MAGIC_BYTES = {
+    b"\xff\xd8\xff": "jpeg",
+    b"\x89PNG": "png",
+    b"GIF8": "gif",
+    b"RIFF": "webp",  # RIFF is the WebP container format
+}

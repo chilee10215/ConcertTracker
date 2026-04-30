@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 import { Camera, Loader2, X } from "lucide-react";
+import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -53,9 +54,10 @@ export function EditProfileModal({ open, onClose }: EditProfileModalProps) {
       await updateProfile(username, avatarFile);
       onClose();
     } catch (err: unknown) {
-      const msg =
-        (err as { response?: { data?: { detail?: string } } })?.response?.data
-          ?.detail ?? "Failed to update profile. Please try again.";
+      let msg = "Failed to update profile. Please try again.";
+      if (axios.isAxiosError(err) && err.response?.data?.detail) {
+        msg = err.response.data.detail;
+      }
       setError(msg);
     } finally {
       setSaving(false);
