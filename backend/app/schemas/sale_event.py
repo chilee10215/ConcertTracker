@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Literal
 
 from pydantic import BaseModel
 
@@ -24,11 +24,11 @@ class TourResponse(TourBase):
 
 
 class SaleEventBase(BaseModel):
-    type: str
+    type: Literal["FC_LOTTERY", "GENERAL_LOTTERY", "GENERAL_SALE", "REMAINING"]
     registration_start: datetime
     registration_end: datetime
     result_date: Optional[datetime] = None
-    platform: str
+    platform: Literal["Eplus", "Pia", "Lawson", "Melon", "Interpark", "Other"]
     link: str = ""
     notes: str = ""
 

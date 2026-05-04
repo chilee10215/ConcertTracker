@@ -81,7 +81,16 @@ def get_upcoming_sales_for_followed_artists(
         tour = tour_map[event.tour_id]
         result.append(
             SaleEventWithArtist(
-                **{c.key: getattr(event, c.key) for c in event.__table__.columns},
+                id=event.id,
+                tour_id=event.tour_id,
+                type=event.type,
+                registration_start=event.registration_start,
+                registration_end=event.registration_end,
+                result_date=event.result_date,
+                platform=event.platform,
+                link=event.link,
+                notes=event.notes,
+                created_at=event.created_at,
                 artist_name=tour.artist.name,
                 artist_id=tour.artist_id,
                 tour_name=tour.name,
