@@ -63,7 +63,7 @@ def get_upcoming_sales_for_followed_artists(
     if not tour_ids:
         return []
 
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc).replace(tzinfo=None)
     events = (
         db.query(SaleEvent)
         .filter(

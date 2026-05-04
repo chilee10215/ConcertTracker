@@ -3,7 +3,7 @@ Tests for Tour and SaleEvent data models and routes.
 TDD Red phase — these tests are written before the models exist.
 """
 import pytest
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from fastapi.testclient import TestClient
 
 
@@ -36,7 +36,7 @@ def test_sale_event_can_be_created(db, sample_artist):
     db.commit()
     db.refresh(tour)
 
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc).replace(tzinfo=None)
     event = SaleEvent(
         tour_id=tour.id,
         type="FC_LOTTERY",
@@ -68,7 +68,7 @@ def test_sale_event_types_are_valid(db, sample_artist):
     db.commit()
     db.refresh(tour)
 
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc).replace(tzinfo=None)
     for sale_type in VALID_SALE_TYPES:
         event = SaleEvent(
             tour_id=tour.id,
@@ -96,7 +96,7 @@ def test_tour_has_sale_events_relationship(db, sample_artist):
     db.commit()
     db.refresh(tour)
 
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc).replace(tzinfo=None)
     for i in range(3):
         event = SaleEvent(
             tour_id=tour.id,
@@ -161,7 +161,7 @@ def test_get_sale_events_for_tour(client, db, auth_headers, sample_artist):
     db.commit()
     db.refresh(tour)
 
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc).replace(tzinfo=None)
     event = SaleEvent(
         tour_id=tour.id,
         type="GENERAL_SALE",
@@ -201,7 +201,7 @@ def test_get_upcoming_sale_events_for_followed_artists(client, db, auth_headers,
     db.commit()
     db.refresh(tour)
 
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc).replace(tzinfo=None)
     event = SaleEvent(
         tour_id=tour.id,
         type="FC_LOTTERY",
@@ -233,7 +233,7 @@ def test_get_upcoming_sales_filters_out_past_events(client, db, auth_headers, te
     db.commit()
     db.refresh(tour)
 
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc).replace(tzinfo=None)
     # Past event (ended 5 days ago)
     past_event = SaleEvent(
         tour_id=tour.id,
@@ -276,7 +276,7 @@ def test_get_upcoming_sales_supports_pagination(client, db, auth_headers, test_u
     db.commit()
     db.refresh(tour)
 
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc).replace(tzinfo=None)
     # Create 5 future events
     for i in range(5):
         event = SaleEvent(
