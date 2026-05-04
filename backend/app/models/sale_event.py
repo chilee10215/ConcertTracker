@@ -1,6 +1,6 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Text
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Text, Enum, func
 from sqlalchemy.orm import relationship
 
 from app.database import Base
@@ -14,13 +14,13 @@ class SaleEvent(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     tour_id = Column(Integer, ForeignKey("tours.id"), nullable=False)
-    type = Column(String, nullable=False)  # FC_LOTTERY | GENERAL_LOTTERY | GENERAL_SALE | REMAINING
+    type = Column(Enum(*VALID_SALE_TYPES), nullable=False)
     registration_start = Column(DateTime, nullable=False)
     registration_end = Column(DateTime, nullable=False)
     result_date = Column(DateTime, nullable=True)
-    platform = Column(String, nullable=False)  # Eplus | Pia | Lawson | Melon | Interpark | Other
+    platform = Column(Enum(*VALID_PLATFORMS), nullable=False)
     link = Column(String, default="")
     notes = Column(Text, default="")
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, server_default=func.now())
 
     tour = relationship("Tour", back_populates="sale_events")
