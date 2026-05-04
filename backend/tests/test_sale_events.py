@@ -126,10 +126,15 @@ def test_artist_has_tours_relationship(db, sample_artist):
 
 # ── API route tests ───────────────────────────────────────────────────────────
 
-def test_get_tours_for_artist_returns_empty_list(client, auth_headers, sample_artist):
+def test_get_tours_for_artist_returns_empty_list_when_no_tours(client, auth_headers, sample_artist):
     response = client.get(f"/api/tours/artist/{sample_artist.id}", headers=auth_headers)
     assert response.status_code == 200
     assert response.json() == []
+
+
+def test_get_tours_for_invalid_artist_returns_404(client, auth_headers):
+    response = client.get(f"/api/tours/artist/99999", headers=auth_headers)
+    assert response.status_code == 404
 
 
 def test_get_tours_for_artist_returns_tours(client, db, auth_headers, sample_artist):
@@ -177,6 +182,11 @@ def test_get_sale_events_for_tour(client, db, auth_headers, sample_artist):
     assert data[0]["platform"] == "Melon"
 
 
+def test_get_sale_events_for_invalid_tour_returns_404(client, auth_headers):
+    response = client.get(f"/api/tours/99999/sale-events", headers=auth_headers)
+    assert response.status_code == 404
+
+
 def test_get_upcoming_sale_events_for_followed_artists(client, db, auth_headers, test_user, sample_artist):
     from app.models.user import UserArtist
     from app.models.tour import Tour
@@ -208,3 +218,85 @@ def test_get_upcoming_sale_events_for_followed_artists(client, db, auth_headers,
     assert len(data) == 1
     assert data[0]["type"] == "FC_LOTTERY"
     assert data[0]["artist_name"] == sample_artist.name
+
+
+def test_get_upcoming_sales_filters_out_past_events(client, db, auth_headers, test_user, sample_artist):
+    from app.models.user import UserArtist
+    from app.models.tour import Tour
+    from app.models.sale_event import SaleEvent
+
+    follow = UserArtist(user_id=test_user.id, artist_id=sample_artist.id, position=0)
+    db.add(follow)
+
+    tour = Tour(artist_id=sample_artist.id, name="Old Tour", year=2025)
+    db.add(tour)
+    db.commit()
+    db.refresh(tour)
+
+    now = datetime.utcnow()
+    # Past event (ended 5 days ago)
+    past_event = SaleEvent(
+        tour_id=tour.id,
+        type="GENERAL_SALE",
+        registration_start=now - timedelta(days=10),
+        registration_end=now - timedelta(days=5),
+        platform="Eplus",
+    )
+    # Future event (ends in 10 days)
+    future_event = SaleEvent(
+        tour_id=tour.id,
+        type="FC_LOTTERY",
+        registration_start=now + timedelta(days=3),
+        registration_end=now + timedelta(days=10),
+        platform="Pia",
+    )
+    db.add(past_event)
+    db.add(future_event)
+    db.commit()
+
+    response = client.get("/api/tours/upcoming-sales", headers=auth_headers)
+    assert response.status_code == 200
+    data = response.json()
+    # Only future event should be returned
+    assert len(data) == 1
+    assert data[0]["type"] == "FC_LOTTERY"
+    assert data[0]["platform"] == "Pia"
+
+
+def test_get_upcoming_sales_supports_pagination(client, db, auth_headers, test_user, sample_artist):
+    from app.models.user import UserArtist
+    from app.models.tour import Tour
+    from app.models.sale_event import SaleEvent
+
+    follow = UserArtist(user_id=test_user.id, artist_id=sample_artist.id, position=0)
+    db.add(follow)
+
+    tour = Tour(artist_id=sample_artist.id, name="Tour", year=2026)
+    db.add(tour)
+    db.commit()
+    db.refresh(tour)
+
+    now = datetime.utcnow()
+    # Create 5 future events
+    for i in range(5):
+        event = SaleEvent(
+            tour_id=tour.id,
+            type="GENERAL_SALE",
+            registration_start=now + timedelta(days=i),
+            registration_end=now + timedelta(days=i + 5),
+            platform="Eplus",
+        )
+        db.add(event)
+    db.commit()
+
+    # Get first 2 (skip=0, limit=2)
+    response = client.get("/api/tours/upcoming-sales?skip=0&limit=2", headers=auth_headers)
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data) == 2
+
+    # Get next 2 (skip=2, limit=2)
+    response = client.get("/api/tours/upcoming-sales?skip=2&limit=2", headers=auth_headers)
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data) == 2
