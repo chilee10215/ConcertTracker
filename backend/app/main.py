@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from app.database import engine, Base
-from app.routers import auth, artists, concerts, wishlist, users
+from app.routers import auth, artists, concerts, wishlist, users, tours
 from app.config import UPLOAD_BASE_DIR, UPLOAD_AVATARS_DIR
 
 
@@ -36,6 +36,7 @@ app.include_router(artists.router, prefix="/api/artists", tags=["artists"])
 app.include_router(concerts.router, prefix="/api/concerts", tags=["concerts"])
 app.include_router(wishlist.router, prefix="/api/wishlist", tags=["wishlist"])
 app.include_router(users.router, prefix="/api/users", tags=["users"])
+app.include_router(tours.router, prefix="/api/tours", tags=["tours"])
 
 
 @app.get("/api/health")
