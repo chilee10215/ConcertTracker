@@ -14,3 +14,4 @@ class Artist(Base):
 
     followers = relationship("UserArtist", back_populates="artist")
     concerts = relationship("Concert", back_populates="artist")
+    tours = relationship("Tour", back_populates="artist")
