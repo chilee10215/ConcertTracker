@@ -1,6 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
-import { Music, Heart, LayoutDashboard } from "lucide-react";
+import { Music, Heart, LayoutDashboard, Settings } from "lucide-react";
 import { UserProfileDropdown } from "./UserProfileDropdown";
 
 export function Navbar() {
@@ -43,6 +43,17 @@ export function Navbar() {
               >
                 <Heart className="h-4 w-4" />
                 Wishlist
+              </Link>
+              <Link
+                to="/admin"
+                className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-colors ${
+                  isActive("/admin")
+                    ? "text-primary"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Settings className="h-4 w-4" />
+                Admin
               </Link>
             </div>
           )}

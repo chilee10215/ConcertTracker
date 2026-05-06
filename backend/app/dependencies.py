@@ -5,7 +5,7 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 
 from app.database import SessionLocal
-from app.models.user import User
+from app.models.user import User, UserRole
 from app.services.auth_service import decode_access_token
 
 security = HTTPBearer()
@@ -36,3 +36,12 @@ def get_current_user(
             detail="User not found",
         )
     return user
+
+
+def require_admin(current_user: User = Depends(get_current_user)) -> User:
+    if current_user.role != UserRole.ADMIN.value:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin access required",
+        )
+    return current_user

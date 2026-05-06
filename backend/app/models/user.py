@@ -1,9 +1,16 @@
 from datetime import datetime
+from enum import Enum
 
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 
 from app.database import Base
+
+
+class UserRole(str, Enum):
+    ADMIN = "admin"
+    USER = "user"
+    MODERATOR = "moderator"
 
 
 class User(Base):
@@ -14,6 +21,7 @@ class User(Base):
     password_hash = Column(String, nullable=False)
     username = Column(String, nullable=True)
     avatar_url = Column(String, nullable=True)
+    role = Column(String, default=UserRole.USER.value, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
 
     followed_artists = relationship("UserArtist", back_populates="user")
