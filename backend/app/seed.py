@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from app.database import SessionLocal, engine, Base
 from app.models.artist import Artist
 from app.models.concert import Concert
-from app.models.user import User
+from app.models.user import User, UserRole
 from app.services.auth_service import hash_password
 
 Base.metadata.create_all(bind=engine)
@@ -18,16 +18,17 @@ def seed():
         db.close()
         return
 
-    # Create test user
-    test_user = User(
+    # Create admin user
+    admin_user = User(
         email="cyrolee68@example.com",
         password_hash=hash_password("testtest"),
-        username="cyrolee"
+        username="cyrolee",
+        role=UserRole.ADMIN.value
     )
-    db.add(test_user)
+    db.add(admin_user)
     db.commit()
-    db.refresh(test_user)
-    print("✓ Created test user: cyrolee68@example.com / testtest")
+    db.refresh(admin_user)
+    print("✓ Created admin user: cyrolee68@example.com / testtest")
 
     artists_data = [
         {"name": "Taylor Swift", "image_url": "https://placehold.co/300x300?text=Taylor+Swift", "genres": ["Pop", "Country"]},
