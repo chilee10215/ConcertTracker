@@ -14,7 +14,7 @@ import api from "@/lib/api";
 
 interface TourFormProps {
   artists: Artist[];
-  onSuccess: () => void;
+  onSuccess: (newTour?: any) => void;
 }
 
 export function TourForm({ artists, onSuccess }: TourFormProps) {
@@ -42,7 +42,7 @@ export function TourForm({ artists, onSuccess }: TourFormProps) {
 
     setLoading(true);
     try {
-      await api.post("/tours", {
+      const res = await api.post("/tours", {
         artist_id: parseInt(artistId, 10),
         name,
         description,
@@ -53,7 +53,7 @@ export function TourForm({ artists, onSuccess }: TourFormProps) {
       setName("");
       setYear("");
       setDescription("");
-      onSuccess();
+      onSuccess(res.data);
     } catch (err: any) {
       setError(err.response?.data?.detail || "Failed to create tour");
     } finally {

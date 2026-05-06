@@ -30,6 +30,14 @@ def create_tour(
     return tour
 
 
+@router.get("/admin/all", response_model=List[TourResponse])
+def get_all_tours_for_admin(
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    return db.query(Tour).all()
+
+
 @router.get("", response_model=List[TourResponse])
 def get_all_tours(
     skip: int = Query(0, ge=0),

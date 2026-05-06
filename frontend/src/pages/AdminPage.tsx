@@ -17,7 +17,7 @@ export function AdminPage() {
       try {
         const [artistsRes, toursRes] = await Promise.all([
           api.get("/artists"),
-          api.get("/tours"),
+          api.get("/tours/admin/all"),
         ]);
         setArtists(artistsRes.data);
         setTours(toursRes.data);
@@ -30,13 +30,9 @@ export function AdminPage() {
     fetchData();
   }, []);
 
-  // Refetch tours after creating a new one
-  const handleTourSuccess = async () => {
-    try {
-      const res = await api.get("/tours");
-      setTours(res.data);
-    } catch (err) {
-      console.error("Failed to refetch tours:", err);
+  const handleTourSuccess = (newTour?: any) => {
+    if (newTour) {
+      setTours((prev) => [...prev, newTour]);
     }
   };
 

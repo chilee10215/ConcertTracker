@@ -16,7 +16,7 @@ import { safeParseDate, isValidDateString, isEndDateAfterStartDate } from "@/lib
 interface SaleEventFormProps {
   tours: Tour[];
   artists: Artist[];
-  onSuccess: () => void;
+  onSuccess: (newTour?: any) => void;
 }
 
 export function SaleEventForm({ tours, artists, onSuccess }: SaleEventFormProps) {
