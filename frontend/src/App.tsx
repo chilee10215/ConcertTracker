@@ -7,6 +7,7 @@ import { SignupPage } from "@/pages/SignupPage";
 import { DashboardPage } from "@/pages/DashboardPage";
 import { ArtistConcertsPage } from "@/pages/ArtistConcertsPage";
 import { WishlistPage } from "@/pages/WishlistPage";
+import { AdminPage } from "@/pages/AdminPage";
 
 function App() {
   return (
@@ -37,6 +38,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <WishlistPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin"
+              element={
+                <ProtectedRoute>
+                  <AdminPage />
                 </ProtectedRoute>
               }
             />
