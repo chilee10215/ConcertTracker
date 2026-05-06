@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 from app.main import app
 from app.database import Base
 from app.dependencies import get_db
-from app.models.user import User
+from app.models.user import User, UserRole
 from app.models.artist import Artist
 from app.models.concert import Concert
 from app.services.auth_service import hash_password, create_access_token
@@ -70,6 +70,7 @@ def test_user(db):
         email="test@example.com",
         password_hash=hash_password("password123"),
         username="testuser",
+        role=UserRole.ADMIN.value,
     )
     db.add(user)
     db.commit()

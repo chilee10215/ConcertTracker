@@ -382,3 +382,90 @@ def test_create_sale_event_with_invalid_tour_returns_404(client, auth_headers):
     )
     assert response.status_code == 404
     assert "Tour not found" in response.json()["detail"]
+
+
+# ── Authorization tests ───────────────────────────────────────────────────────
+
+def test_create_tour_requires_admin_role(client, db, sample_artist):
+    from app.models.user import User, UserRole
+    from app.services.auth_service import hash_password, create_access_token
+
+    # Create non-admin user
+    user = User(
+        email="user@example.com",
+        password_hash=hash_password("password"),
+        role=UserRole.USER.value,
+    )
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+
+    token = create_access_token(user.id)
+    headers = {"Authorization": f"Bearer {token}"}
+
+    response = client.post(
+        "/api/tours",
+        headers=headers,
+        json={
+            "artist_id": sample_artist.id,
+            "name": "Test Tour",
+            "year": 2026,
+        },
+    )
+    assert response.status_code == 403
+    assert "Admin access required" in response.json()["detail"]
+
+
+def test_create_sale_event_requires_admin_role(client, db, sample_artist):
+    from app.models.user import User, UserRole
+    from app.models.tour import Tour
+    from app.services.auth_service import hash_password, create_access_token
+
+    # Create tour
+    tour = Tour(artist_id=sample_artist.id, name="Test Tour", year=2026)
+    db.add(tour)
+    db.commit()
+    db.refresh(tour)
+
+    # Create non-admin user
+    user = User(
+        email="user@example.com",
+        password_hash=hash_password("password"),
+        role=UserRole.USER.value,
+    )
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+
+    token = create_access_token(user.id)
+    headers = {"Authorization": f"Bearer {token}"}
+
+    now = datetime.now(timezone.utc).replace(tzinfo=None)
+    response = client.post(
+        "/api/tours/sale-events",
+        headers=headers,
+        json={
+            "tour_id": tour.id,
+            "type": "GENERAL_SALE",
+            "registration_start": (now + timedelta(days=1)).isoformat(),
+            "registration_end": (now + timedelta(days=7)).isoformat(),
+            "platform": "Eplus",
+        },
+    )
+    assert response.status_code == 403
+    assert "Admin access required" in response.json()["detail"]
+
+
+def test_get_all_tours_returns_all_tours(client, db, auth_headers, sample_artist):
+    from app.models.tour import Tour
+
+    # Create multiple tours
+    for i in range(3):
+        tour = Tour(artist_id=sample_artist.id, name=f"Tour {i}", year=2026)
+        db.add(tour)
+    db.commit()
+
+    response = client.get("/api/tours", headers=auth_headers)
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data) >= 3
