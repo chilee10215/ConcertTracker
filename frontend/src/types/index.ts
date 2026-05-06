@@ -46,3 +46,24 @@ export interface WishlistItem {
   added_at: string;
   concert: Concert;
 }
+
+export interface Tour {
+  id: number;
+  artist_id: number;
+  name: string;
+  description: string;
+  year: number | null;
+}
+
+export interface SaleEvent {
+  id: number;
+  tour_id: number;
+  type: "FC_LOTTERY" | "GENERAL_LOTTERY" | "GENERAL_SALE" | "REMAINING";
+  registration_start: string;
+  registration_end: string;
+  result_date: string | null;
+  platform: "Eplus" | "Pia" | "Lawson" | "Melon" | "Interpark" | "Other";
+  link: string;
+  notes: string;
+  created_at: string;
+}
