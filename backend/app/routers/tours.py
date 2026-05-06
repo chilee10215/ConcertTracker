@@ -4,7 +4,7 @@ from typing import List, Dict
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session, joinedload
 
-from app.dependencies import get_db, get_current_user
+from app.dependencies import get_db, get_current_user, require_admin
 from app.models.artist import Artist
 from app.models.tour import Tour
 from app.models.sale_event import SaleEvent
@@ -17,7 +17,7 @@ router = APIRouter()
 @router.post("", response_model=TourResponse, status_code=201)
 def create_tour(
     data: TourCreate,
-    current_user: User = Depends(get_current_user),
+    admin: User = Depends(require_admin),
     db: Session = Depends(get_db),
 ):
     artist = db.query(Artist).filter(Artist.id == data.artist_id).first()
@@ -28,6 +28,16 @@ def create_tour(
     db.commit()
     db.refresh(tour)
     return tour
+
+
+@router.get("", response_model=List[TourResponse])
+def get_all_tours(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(100, ge=1, le=500),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    return db.query(Tour).offset(skip).limit(limit).all()
 
 
 @router.get("/artist/{artist_id}", response_model=List[TourResponse])
@@ -57,7 +67,7 @@ def get_sale_events_for_tour(
 @router.post("/sale-events", response_model=SaleEventResponse, status_code=201)
 def create_sale_event(
     data: SaleEventCreate,
-    current_user: User = Depends(get_current_user),
+    admin: User = Depends(require_admin),
     db: Session = Depends(get_db),
 ):
     tour = db.query(Tour).filter(Tour.id == data.tour_id).first()
