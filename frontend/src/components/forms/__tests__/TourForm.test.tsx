@@ -1,13 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { TourForm } from "../TourForm";
-import * as api from "@/lib/api";
-
-vi.mock("@/lib/api", () => ({
-  default: {
-    post: vi.fn(),
-  },
-}));
 
 const mockArtists = [
   { id: 1, name: "Taylor Swift", image_url: "http://example.com/1.jpg", genres: ["Pop"] },
