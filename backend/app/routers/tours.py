@@ -9,9 +9,25 @@ from app.models.artist import Artist
 from app.models.tour import Tour
 from app.models.sale_event import SaleEvent
 from app.models.user import User, UserArtist
-from app.schemas.sale_event import TourResponse, SaleEventResponse, SaleEventWithArtist
+from app.schemas.sale_event import TourResponse, SaleEventResponse, SaleEventWithArtist, TourCreate, SaleEventCreate
 
 router = APIRouter()
+
+
+@router.post("", response_model=TourResponse, status_code=201)
+def create_tour(
+    data: TourCreate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    artist = db.query(Artist).filter(Artist.id == data.artist_id).first()
+    if not artist:
+        raise HTTPException(status_code=404, detail="Artist not found")
+    tour = Tour(**data.model_dump())
+    db.add(tour)
+    db.commit()
+    db.refresh(tour)
+    return tour
 
 
 @router.get("/artist/{artist_id}", response_model=List[TourResponse])
@@ -36,6 +52,22 @@ def get_sale_events_for_tour(
     if not tour:
         raise HTTPException(status_code=404, detail="Tour not found")
     return tour.sale_events
+
+
+@router.post("/sale-events", response_model=SaleEventResponse, status_code=201)
+def create_sale_event(
+    data: SaleEventCreate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    tour = db.query(Tour).filter(Tour.id == data.tour_id).first()
+    if not tour:
+        raise HTTPException(status_code=404, detail="Tour not found")
+    event = SaleEvent(**data.model_dump())
+    db.add(event)
+    db.commit()
+    db.refresh(event)
+    return event
 
 
 @router.get("/upcoming-sales", response_model=List[SaleEventWithArtist])
