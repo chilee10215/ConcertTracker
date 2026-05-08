@@ -22,11 +22,11 @@ export function UserProfileDropdown() {
     <>
       <DropdownMenu>
         <DropdownMenuTrigger
-          className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           aria-label="User profile menu"
         >
           {/* Avatar */}
-          <span className="relative flex h-8 w-8 shrink-0 overflow-hidden rounded-full border border-white/10 bg-primary/20">
+          <span className="relative flex h-8 w-8 shrink-0 overflow-hidden rounded-full border border-white/20 bg-primary/20">
             {avatarUrl ? (
               <img
                 src={avatarUrl}
@@ -41,15 +41,15 @@ export function UserProfileDropdown() {
           </span>
 
           {/* Name */}
-          <span className="hidden text-foreground sm:inline">{displayName}</span>
+          <span className="hidden text-navbar-foreground sm:inline">{displayName}</span>
 
           {/* Chevron */}
-          <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+          <ChevronDown className="h-3.5 w-3.5 text-navbar-foreground/70" />
         </DropdownMenuTrigger>
 
         <DropdownMenuContent
           align="end"
-          className="w-52 border border-white/10 bg-[oklch(0.12_0.01_280)] text-foreground"
+          className="w-52 border border-white/10 bg-navbar text-navbar-foreground"
         >
           <DropdownMenuItem
             onClick={() => setEditOpen(true)}
@@ -62,7 +62,7 @@ export function UserProfileDropdown() {
           <DropdownMenuSeparator className="border-white/10" />
 
           <div className="px-2 py-1.5">
-            <p className="text-xs text-muted-foreground">{user?.email}</p>
+            <p className="text-xs text-navbar-foreground/60">{user?.email}</p>
           </div>
 
           <DropdownMenuSeparator className="border-white/10" />
