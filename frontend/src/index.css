@@ -20,6 +20,8 @@
   --color-muted-foreground: var(--muted-foreground);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
+  --color-accent-bg: var(--accent-bg);
+  --color-accent-text: var(--accent-text);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
   --color-border: var(--border);
@@ -52,6 +54,8 @@
   --muted-foreground: oklch(0.48 0.01 260); /* medium gray for secondary text */
   --accent: oklch(0.88 0.23 152);         /* same green for highlights */
   --accent-foreground: oklch(0.12 0.06 152);
+  --accent-bg: oklch(0.92 0.09 152);      /* soft muted green for backgrounds/tags */
+  --accent-text: oklch(0.25 0.08 152);    /* darker green for text on accent-bg */
   --destructive: oklch(0.62 0.22 25);
   --destructive-foreground: oklch(0.98 0 0);
   --border: oklch(0 0 0 / 10%);           /* subtle dark borders */
