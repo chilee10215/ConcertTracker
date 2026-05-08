@@ -288,7 +288,7 @@ export function DashboardPage() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search artists..."
-              className="border-white/10 bg-white/5 pl-9 pr-9 text-foreground placeholder:text-muted-foreground focus-visible:ring-primary"
+              className="border-border bg-input pl-9 pr-9 text-foreground placeholder:text-muted-foreground focus-visible:ring-primary"
               aria-label="Search artists"
             />
             {query && (
@@ -324,7 +324,7 @@ export function DashboardPage() {
 
             {/* Artist results */}
             {!searching && results.length > 0 && (
-              <div className="max-h-[60vh] space-y-2 overflow-y-auto rounded-lg border border-white/10 bg-popover p-2 pr-1 shadow-xl scrollbar-thin">
+              <div className="max-h-[60vh] space-y-2 overflow-y-auto rounded-lg border border-border bg-popover p-2 pr-1 shadow-xl scrollbar-thin">
                 {results.map((artist) => {
                   const isFollowing = followedNames.has(artist.name);
                   const isPending = followingName === artist.name;
@@ -429,8 +429,8 @@ export function DashboardPage() {
                 onClick={() => setActiveGenre(genre)}
                 className={`rounded-full px-4 py-1.5 text-xs font-medium transition-all ${
                   activeGenre === genre
-                    ? "bg-primary text-white shadow-[0_0_12px_oklch(0.65_0.26_280/0.4)]"
-                    : "border border-white/10 text-muted-foreground hover:border-primary/40 hover:text-foreground"
+                    ? "bg-primary text-white shadow-[0_0_12px_oklch(0.88_0.23_152/0.4)]"
+                    : "border border-border text-muted-foreground hover:border-primary/60 hover:text-foreground"
                 }`}
               >
                 {genre}
