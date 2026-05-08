@@ -35,31 +35,28 @@
   --radius-3xl: calc(var(--radius) * 2.2);
 }
 
-/* Dark theme variables (dark-only design for v1).
-   To support light mode in future: wrap these in @media (prefers-color-scheme: dark)
-   and add light theme variables in a separate :root or @light rule.
-
-   Three-layer depth system: background (darkest) → card (mid) → popover (brightest) */
+/* Light theme — TripAdvisor-inspired clean aesthetic with #27F587 green accent.
+   Three-layer depth system: background (off-white) → card (white) → popover (white + shadow) */
 :root {
-  --background: oklch(0.08 0.01 280);     /* page bg — deepest */
-  --foreground: oklch(0.93 0 0);
-  --card: oklch(0.14 0.015 280);          /* cards — clearly above bg */
-  --card-foreground: oklch(0.93 0 0);
-  --popover: oklch(0.22 0.02 280);        /* dialogs/menus — brightest layer */
-  --popover-foreground: oklch(0.93 0 0);
-  --primary: oklch(0.65 0.26 280);
-  --primary-foreground: oklch(0.98 0 0);
-  --secondary: oklch(0.19 0.015 280);
-  --secondary-foreground: oklch(0.93 0 0);
-  --muted: oklch(0.19 0.015 280);
-  --muted-foreground: oklch(0.5 0 0);
-  --accent: oklch(0.65 0.26 280);
-  --accent-foreground: oklch(0.98 0 0);
-  --destructive: oklch(0.65 0.22 25);
+  --background: oklch(0.97 0.006 145);    /* page bg — very lightly green-tinted white */
+  --foreground: oklch(0.12 0.005 260);    /* near-black, slight cool cast */
+  --card: oklch(1 0 0);                   /* pure white cards — pop off the background */
+  --card-foreground: oklch(0.12 0.005 260);
+  --popover: oklch(1 0 0);               /* white popovers/dialogs */
+  --popover-foreground: oklch(0.12 0.005 260);
+  --primary: oklch(0.88 0.23 152);        /* #27F587 — vibrant green for CTAs */
+  --primary-foreground: oklch(0.12 0.06 152); /* dark green text on green button */
+  --secondary: oklch(0.93 0.01 145);      /* light green-gray surface */
+  --secondary-foreground: oklch(0.2 0.01 260);
+  --muted: oklch(0.95 0.006 145);         /* subtle muted background */
+  --muted-foreground: oklch(0.48 0.01 260); /* medium gray for secondary text */
+  --accent: oklch(0.88 0.23 152);         /* same green for highlights */
+  --accent-foreground: oklch(0.12 0.06 152);
+  --destructive: oklch(0.62 0.22 25);
   --destructive-foreground: oklch(0.98 0 0);
-  --border: oklch(1 0 0 / 12%);           /* slightly more visible borders */
-  --input: oklch(1 0 0 / 10%);
-  --ring: oklch(0.65 0.26 280);
+  --border: oklch(0 0 0 / 10%);           /* subtle dark borders */
+  --input: oklch(0.96 0.007 145);         /* light green-tinted input bg */
+  --ring: oklch(0.88 0.23 152);           /* green focus ring */
   --radius: 0.625rem;
 }
 
