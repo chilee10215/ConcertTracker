@@ -67,7 +67,7 @@ export function ArtistCard({ artist, onUnfollow }: ArtistCardProps) {
               <Badge
                 key={genre}
                 variant="secondary"
-                className="h-5 px-1.5 text-[10px] bg-primary/10 text-primary border-0"
+                className="h-5 px-1.5 text-[10px] bg-accent-bg text-accent-text border-0"
               >
                 {genre}
               </Badge>

@@ -3,13 +3,13 @@
   padding: 5px 10px;
   border-radius: 5px;
   color: var(--accent);
-  background: var(--accent-bg);
+  background: oklch(0.88 0.23 152 / 12%);
   border: 2px solid transparent;
   transition: border-color 0.3s;
   margin-bottom: 24px;
 
   &:hover {
-    border-color: var(--accent-border);
+    border-color: oklch(0.88 0.23 152 / 50%);
   }
   &:focus-visible {
     outline: 2px solid var(--accent);
@@ -116,10 +116,10 @@
   }
 
   a {
-    color: var(--text-h);
+    color: var(--foreground);
     font-size: 16px;
     border-radius: 6px;
-    background: var(--social-bg);
+    background: var(--secondary);
     display: flex;
     padding: 6px 12px;
     align-items: center;
@@ -128,7 +128,7 @@
     transition: box-shadow 0.3s;
 
     &:hover {
-      box-shadow: var(--shadow);
+      box-shadow: 0 2px 8px oklch(0 0 0 / 12%);
     }
     .button-icon {
       height: 18px;
