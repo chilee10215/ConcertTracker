@@ -23,7 +23,9 @@ export function useUpcomingSales(skip: number, limit: number) {
       setError('Failed to load upcoming sales');
       setEvents([]);
     } finally {
-      setLoading(false);
+      if (!signal.aborted) {
+        setLoading(false);
+      }
     }
   }, [skip, limit]);
 
