@@ -68,3 +68,9 @@ export interface SaleEvent {
   notes: string;
   created_at: string;
 }
+
+export interface SaleEventWithArtist extends SaleEvent {
+  artist_name: string;
+  artist_id: number;
+  tour_name: string;
+}
