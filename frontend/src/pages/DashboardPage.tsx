@@ -17,6 +17,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { ArtistCard } from "@/components/dashboard/ArtistCard";
+import { UpcomingSalesFeed } from "@/components/UpcomingSalesFeed";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -481,6 +482,17 @@ export function DashboardPage() {
             </SortableContext>
           </DndContext>
         )}
+      </div>
+
+      {/* Upcoming Sales Section */}
+      <div>
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold tracking-tight">Upcoming Sales</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Ticket sales events from artists you follow
+          </p>
+        </div>
+        <UpcomingSalesFeed />
       </div>
     </div>
   );
