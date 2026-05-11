@@ -43,21 +43,18 @@ export function UpcomingSalesFeed({ limit = 10 }: UpcomingSalesFeedProps) {
     );
   }
 
-  if (events.length === 0) {
-    return (
-      <div className="flex h-32 flex-col items-center justify-center rounded-lg border border-border bg-card/50 p-6 text-center">
-        <Calendar className="mb-3 h-10 w-10 text-muted-foreground/40" />
-        <p className="text-sm text-muted-foreground">
-          No upcoming sales for your followed artists.
-        </p>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-4">
-      <div className="space-y-3">
-        {events.map((event) => (
+      {events.length === 0 && skip === 0 ? (
+        <div className="flex h-32 flex-col items-center justify-center rounded-lg border border-border bg-card/50 p-6 text-center">
+          <Calendar className="mb-3 h-10 w-10 text-muted-foreground/40" />
+          <p className="text-sm text-muted-foreground">
+            No upcoming sales for your followed artists.
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {events.map((event) => (
           <div
             key={event.id}
             className="rounded-lg border border-border bg-card/50 p-4 transition hover:bg-card/80"
@@ -125,8 +122,9 @@ export function UpcomingSalesFeed({ limit = 10 }: UpcomingSalesFeedProps) {
               </Button>
             )}
           </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
 
       {/* Pagination */}
       <div className="flex items-center justify-between gap-2 pt-4">
