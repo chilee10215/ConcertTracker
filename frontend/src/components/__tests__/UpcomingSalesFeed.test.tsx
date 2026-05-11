@@ -2,10 +2,10 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { UpcomingSalesFeed } from '../UpcomingSalesFeed';
-import api from '@/lib/api';
+import * as useUpcomingSalesModule from '@/hooks/useUpcomingSales';
 import type { SaleEventWithArtist } from '@/types';
 
-vi.mock('@/lib/api');
+vi.mock('@/hooks/useUpcomingSales');
 
 describe('UpcomingSalesFeed', () => {
   const mockSaleEvents: SaleEventWithArtist[] = [
@@ -46,98 +46,94 @@ describe('UpcomingSalesFeed', () => {
   });
 
   it('fetches and displays upcoming sale events', async () => {
-    (api.get as any).mockResolvedValue({
-      data: mockSaleEvents,
+    vi.mocked(useUpcomingSalesModule.useUpcomingSales).mockReturnValue({
+      events: mockSaleEvents,
+      loading: false,
+      error: null,
     });
 
     render(<UpcomingSalesFeed />);
 
-    await waitFor(() => {
-      expect(screen.getByText('Taylor Swift')).toBeInTheDocument();
-      expect(screen.getByText('The Weeknd')).toBeInTheDocument();
-    });
+    expect(screen.getByText('Taylor Swift')).toBeInTheDocument();
+    expect(screen.getByText('The Weeknd')).toBeInTheDocument();
   });
 
   it('displays sale event details correctly', async () => {
-    (api.get as any).mockResolvedValue({
-      data: mockSaleEvents,
+    vi.mocked(useUpcomingSalesModule.useUpcomingSales).mockReturnValue({
+      events: mockSaleEvents,
+      loading: false,
+      error: null,
     });
 
     render(<UpcomingSalesFeed />);
 
-    await waitFor(() => {
-      expect(screen.getByText('Eras Tour 2026')).toBeInTheDocument();
-      expect(screen.getByText('FC_LOTTERY')).toBeInTheDocument();
-      expect(screen.getByText('Eplus')).toBeInTheDocument();
-    });
+    expect(screen.getByText('Eras Tour 2026')).toBeInTheDocument();
+    expect(screen.getByText('FC_LOTTERY')).toBeInTheDocument();
+    expect(screen.getByText('Eplus')).toBeInTheDocument();
   });
 
   it('displays empty state when no sales events', async () => {
-    (api.get as any).mockResolvedValue({
-      data: [],
+    vi.mocked(useUpcomingSalesModule.useUpcomingSales).mockReturnValue({
+      events: [],
+      loading: false,
+      error: null,
     });
 
     render(<UpcomingSalesFeed />);
 
-    await waitFor(() => {
-      expect(screen.getByText(/no upcoming sales/i)).toBeInTheDocument();
-    });
-  });
-
-  it('supports pagination with skip and limit', async () => {
-    (api.get as any).mockResolvedValue({
-      data: mockSaleEvents.slice(0, 1),
-    });
-
-    render(<UpcomingSalesFeed />);
-
-    await waitFor(() => {
-      expect(api.get).toHaveBeenCalledWith(
-        '/tours/upcoming-sales',
-        expect.objectContaining({
-          params: expect.objectContaining({
-            skip: 0,
-            limit: expect.any(Number),
-          }),
-        })
-      );
-    });
+    expect(screen.getByText(/no upcoming sales/i)).toBeInTheDocument();
   });
 
   it('shows loading state initially', () => {
-    (api.get as any).mockImplementation(
-      () => new Promise(() => {}) // Never resolves
-    );
+    vi.mocked(useUpcomingSalesModule.useUpcomingSales).mockReturnValue({
+      events: [],
+      loading: true,
+      error: null,
+    });
 
     render(<UpcomingSalesFeed />);
 
     expect(screen.getByRole('status')).toBeInTheDocument();
   });
 
-  it('has next button that is enabled when there are more results', async () => {
-    (api.get as any).mockResolvedValue({
-      data: mockSaleEvents,
-    });
-
-    render(<UpcomingSalesFeed limit={1} />);
-
-    await waitFor(() => {
-      const nextButton = screen.getByRole('button', { name: /next/i });
-      expect(nextButton).not.toBeDisabled();
-    });
-  });
-
-  it('displays dates in readable format', async () => {
-    (api.get as any).mockResolvedValue({
-      data: mockSaleEvents,
+  it('displays error message when fetch fails', () => {
+    vi.mocked(useUpcomingSalesModule.useUpcomingSales).mockReturnValue({
+      events: [],
+      loading: false,
+      error: 'Failed to load upcoming sales',
     });
 
     render(<UpcomingSalesFeed />);
 
-    await waitFor(() => {
-      // Should display formatted dates like "May 20, 2026"
-      const dateElements = screen.getAllByText(/May \d+, 2026/);
-      expect(dateElements.length).toBeGreaterThan(0);
+    expect(screen.getByText('Failed to load upcoming sales')).toBeInTheDocument();
+  });
+
+  it('disables pagination buttons while loading', () => {
+    vi.mocked(useUpcomingSalesModule.useUpcomingSales).mockReturnValue({
+      events: mockSaleEvents,
+      loading: true,
+      error: null,
     });
+
+    render(<UpcomingSalesFeed />);
+
+    const previousButton = screen.getByRole('button', { name: /previous/i });
+    const nextButton = screen.getByRole('button', { name: /next/i });
+
+    expect(previousButton).toBeDisabled();
+    expect(nextButton).toBeDisabled();
+  });
+
+  it('displays dates in readable format', () => {
+    vi.mocked(useUpcomingSalesModule.useUpcomingSales).mockReturnValue({
+      events: mockSaleEvents,
+      loading: false,
+      error: null,
+    });
+
+    render(<UpcomingSalesFeed />);
+
+    const dateElements = screen.getAllByText(/May \d+, 2026/);
+    expect(dateElements.length).toBeGreaterThan(0);
   });
 });
