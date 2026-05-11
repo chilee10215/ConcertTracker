@@ -1,53 +1,17 @@
-import { useState, useEffect } from 'react';
-import { Loader2, ExternalLink, Calendar, Tag } from 'lucide-react';
+import { useState } from 'react';
+import { Loader2, ExternalLink, Calendar, Tag, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import api from '@/lib/api';
-import type { SaleEventWithArtist } from '@/types';
-
-const SALE_TYPE_COLORS: Record<string, string> = {
-  FC_LOTTERY: 'bg-blue-500/20 text-blue-300',
-  GENERAL_LOTTERY: 'bg-purple-500/20 text-purple-300',
-  GENERAL_SALE: 'bg-green-500/20 text-green-300',
-  REMAINING: 'bg-orange-500/20 text-orange-300',
-};
-
-const PLATFORM_COLORS: Record<string, string> = {
-  Eplus: 'bg-red-500/20 text-red-300',
-  Pia: 'bg-yellow-500/20 text-yellow-300',
-  Lawson: 'bg-blue-500/20 text-blue-300',
-  Melon: 'bg-green-500/20 text-green-300',
-  Interpark: 'bg-purple-500/20 text-purple-300',
-  Other: 'bg-gray-500/20 text-gray-300',
-};
+import { useUpcomingSales } from '@/hooks/useUpcomingSales';
+import { SALE_TYPE_COLORS, PLATFORM_COLORS } from '@/constants/saleEventStyles';
 
 interface UpcomingSalesFeedProps {
   limit?: number;
 }
 
 export function UpcomingSalesFeed({ limit = 10 }: UpcomingSalesFeedProps) {
-  const [events, setEvents] = useState<SaleEventWithArtist[]>([]);
-  const [loading, setLoading] = useState(true);
   const [skip, setSkip] = useState(0);
-
-  useEffect(() => {
-    fetchUpcomingSales();
-  }, [skip]);
-
-  const fetchUpcomingSales = async () => {
-    setLoading(true);
-    try {
-      const res = await api.get('/tours/upcoming-sales', {
-        params: { skip, limit },
-      });
-      setEvents(res.data);
-    } catch (error) {
-      console.error('Failed to fetch upcoming sales:', error);
-      setEvents([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { events, loading, error } = useUpcomingSales(skip, limit);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -58,7 +22,7 @@ export function UpcomingSalesFeed({ limit = 10 }: UpcomingSalesFeedProps) {
     });
   };
 
-  if (loading) {
+  if (loading && events.length === 0) {
     return (
       <div
         className="flex h-32 items-center justify-center"
@@ -66,6 +30,15 @@ export function UpcomingSalesFeed({ limit = 10 }: UpcomingSalesFeedProps) {
         aria-label="Loading upcoming sales"
       >
         <Loader2 className="h-6 w-6 animate-spin text-primary/60" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex h-32 flex-col items-center justify-center rounded-lg border border-destructive/50 bg-destructive/5 p-6 text-center">
+        <AlertCircle className="mb-3 h-10 w-10 text-destructive" />
+        <p className="text-sm text-destructive">{error}</p>
       </div>
     );
   }
@@ -161,7 +134,7 @@ export function UpcomingSalesFeed({ limit = 10 }: UpcomingSalesFeedProps) {
           variant="outline"
           size="sm"
           onClick={() => setSkip(Math.max(0, skip - limit))}
-          disabled={skip === 0}
+          disabled={skip === 0 || loading}
         >
           Previous
         </Button>
@@ -172,7 +145,7 @@ export function UpcomingSalesFeed({ limit = 10 }: UpcomingSalesFeedProps) {
           variant="outline"
           size="sm"
           onClick={() => setSkip(skip + limit)}
-          disabled={events.length < limit}
+          disabled={events.length < limit || loading}
         >
           Next
         </Button>
